@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4대 영역 습관 탑</title>
+    <!-- React 및 Babel CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #ffffff; color: #37352f; padding: 12px; }
+        h1 { text-align: center; font-size: 1.3rem; margin-bottom: 12px; }
+
+        .card { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 0.8rem; }
+        .card summary { font-weight: bold; cursor: pointer; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+        input, select, button { padding: 6px 8px; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #2eaadc; color: white; border: none; font-weight: bold; cursor: pointer; }
+
+        .tower-grid { display: flex; gap: 4px; width: 100%; justify-content: space-between; }
+        .category-wrapper { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+        .tower-col { flex: 1; display: flex; flex-direction: column; border-radius: 8px; padding: 6px 2px; min-height: 200px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .col-study { background-color: #fbeae9; border: 1px solid #f5c6cb; }
+        .col-hobby { background-color: #fbf3db; border: 1px solid #fce8b2; }
+        .col-body  { background-color: #e8f4fd; border: 1px solid #b3e0fc; }
+        .col-mind  { background-color: #f3e8ff; border: 1px solid #e1bee7; }
+
+        .tower-header { text-align: center; font-size: 0.7rem; font-weight: bold; padding-bottom: 4px; border-bottom: 2px solid rgba(0,0,0,0.06); }
+        .tower-blocks { display: flex; flex-direction: column-reverse; width: 100%; align-items: center; margin-top: auto; }
+
+        .habit-block { width: 92%; border-radius: 4px; padding: 5px 2px; margin-top: 4px; font-size: 0.65rem; text-align: center; word-break: break-all; background: #ffffff; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+        .block-study { color: #d93838; border: 1px solid #f5c6cb; }
+        .block-hobby { color: #dfab01; border: 1px solid #fce8b2; }
+        .block-body  { color: #337ea9; border: 1px solid #b3e0fc; }
+        .block-mind  { color: #9065b0; border: 1px solid #e1bee7; }
+
+        .waiting-zone { background-color: #fafafa; border: 1.5px dashed #d0d0d0; border-radius: 8px; padding: 6px 2px; text-align: center; min-height: 70px; }
+        .waiting-title { font-size: 0.58rem; color: #777; font-weight: bold; margin-bottom: 4px; }
+        .waiting-chip { background-color: #ffffff; border-radius: 4px; padding: 3px 2px; margin: 2px auto; width: 90%; font-size: 0.6rem; color: #555; border: 1px solid #e2e2e2; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // MM-back 백엔드 라이브 주소 연결
+        const API_BASE_URL = "https://mm-back.onrender.com";
+        const CATEGORIES = ["공부", "취미", "외면", "내면"];
+        const CAT_ICONS = { "공부": "📚", "취미": "🎨", "외면": "💪", "내면": "🧘" };
+        const CAT_CLASSES = { "공부": "study", "취미": "hobby", "외면": "body", "내면": "mind" };
+
+        function App() {
+            const [habitsData, setHabitsData] = React.useState({ owned: {}, wish: {}, all: [] });
+            const [title, setTitle] = React.useState("");
+            const [category, setCategory] = React.useState("공부");
+            const [status, setStatus] = React.useState("보유 습관");
+            const [selectedDeleteId, setSelectedDeleteId] = React.useState("");
+
+            const loadHabits = async () => {
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/habits`);
+                    const data = await res.json();
+                    setHabitsData(data);
+                    if (data.all && data.all.length > 0) {
+                        setSelectedDeleteId(data.all[0].id);
+                    }
+                } catch (err) {
+                    console.error("데이터 로드 실패:", err);
+                }
+            };
+
+            React.useEffect(() => {
+                loadHabits();
+            }, []);
+
+            const handleAddHabit = async (e) => {
+                e.preventDefault();
+                if (!title.trim()) return;
+
+                await fetch(`${API_BASE_URL}/api/habits`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ title, category, status })
+                });
+
+                setTitle("");
+                loadHabits();
+            };
+
+            const handleDeleteHabit = async () => {
+                if (!selectedDeleteId) return;
+
+                await fetch(`${API_BASE_URL}/api/habits/${selectedDeleteId}`, {
+                    method: "DELETE"
+                });
+
+                loadHabits();
+            };
+
+            return (
+                <div>
+                    <h1>🏛️ 나의 습관 탑</h1>
+
+                    <details className="card">
+                        <summary>➕ 습관 블록 추가</summary>
+                        <form onSubmit={handleAddHabit} className="form-group">
+                            <input
+                                type="text"
+                                placeholder="예: 하루 30분 독서"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                required
+                            />
+                            <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                                {CATEGORIES.map(cat => (
+                                    <option key={cat} value={cat}>{CAT_ICONS[cat]} {cat}</option>
+                                ))}
+                            </select>
+                            <select value={status} onChange={(e) => setStatus(e.target.value)}>
+                                <option value="보유 습관">보유 습관</option>
+                                <option value="만들고 싶은 습관">만들고 싶은 습관</option>
+                            </select>
+                            <button type="submit">저장하기</button>
+                        </form>
+                    </details>
+
+                    <div className="tower-grid">
+                        {CATEGORIES.map(cat => {
+                            const cls = CAT_CLASSES[cat];
+                            const owned = (habitsData.owned && habitsData.owned[cat]) || [];
+                            const wish = (habitsData.wish && habitsData.wish[cat]) || [];
+
+                            return (
+                                <div key={cat} className="category-wrapper">
+                                    <div className={`tower-col col-${cls}`}>
+                                        <div className="tower-header">
+                                            {CAT_ICONS[cat]} {cat}<br />
+                                            <span style={{ fontWeight: 'normal', fontSize: '0.55rem', color: '#777' }}>
+                                                ({owned.length}개)
+                                            </span>
+                                        </div>
+                                        <div className="tower-blocks">
+                                            {owned.map(item => (
+                                                <div key={item.id} className={`habit-block block-${cls}`}>
+                                                    {item.title}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="waiting-zone">
+                                        <div className="waiting-title">⏳ 대기 중 습관</div>
+                                        {wish.length > 0 ? (
+                                            wish.map(w => (
+                                                <div key={w.id} className="waiting-chip">📌 {w.title}</div>
+                                            ))
+                                        ) : (
+                                            <div style={{ fontSize: '0.55rem', color: '#bbb', margin: 'auto 0' }}>대기 없음</div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <details className="card" style={{ marginTop: '12px' }}>
+                        <summary>🗑️ 습관 삭제하기</summary>
+                        <div className="form-group">
+                            <select value={selectedDeleteId} onChange={(e) => setSelectedDeleteId(e.target.value)}>
+                                {(habitsData.all || []).map(item => (
+                                    <option key={item.id} value={item.id}>
+                                        [{item.category}] ({item.status.slice(0, 2)}) {item.title}
+                                    </option>
+                                ))}
+                            </select>
+                            <button type="button" style={{ backgroundColor: '#eb5757' }} onClick={handleDeleteHabit}>
+                                삭제하기
+                            </button>
+                        </div>
+                    </details>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+</body>
+</html>
+
