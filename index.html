@@ -82,7 +82,7 @@
 
         .waiting-zone { height: 150px; flex-shrink: 0; background-color: #f8f9fa; border: 1.5px dashed #cbd5e0; border-radius: 8px; padding: 6px 2px; text-align: center; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
         .waiting-title { font-size: 0.58rem; color: #718096; font-weight: 700; margin-bottom: 4px; flex-shrink: 0; }
-        .waiting-chip { background-color: #ffffff; border-radius: 4px; padding: 5px 3px; margin: 2px auto; width: 90%; font-size: 0.6rem; color: #4a5568; border: 1px solid #e2e8f0; text-align: center; cursor: pointer; user-select: none; touch-action: manipulation; }
+        .waiting-chip { background-color: #ffffff; border-radius: 4px; padding: 6px 4px; margin: 2px auto; width: 90%; font-size: 0.6rem; color: #4a5568; border: 1px solid #e2e8f0; text-align: center; cursor: pointer; user-select: none; touch-action: manipulation; }
         .waiting-chip:active { transform: scale(0.95); }
 
         /* 모달 스타일 */
@@ -125,7 +125,6 @@
             );
         }
 
-        // 반응 속도 최적화 습관 블록
         function HabitBlockItem({ item, cls, isActive, onToggleActive, onLongPress }) {
             const timerRef = React.useRef(null);
             const isLongPressRef = React.useRef(false);
@@ -138,7 +137,7 @@
                         window.navigator.vibrate(30);
                     }
                     onLongPress(item);
-                }, 300); // 꾹 누르기(300ms)
+                }, 300);
             };
 
             const handlePointerUp = () => {
@@ -147,12 +146,10 @@
 
             const handleClick = (e) => {
                 e.stopPropagation();
-                // 꾹 누르기 상태였다면 일반 클릭 동작 무시
                 if (isLongPressRef.current) {
                     isLongPressRef.current = false;
                     return;
                 }
-                // 살짝 탭했을 때 지연 없이 즉시 토글 실행
                 onToggleActive(item.id);
             };
 
@@ -179,7 +176,11 @@
             const [saveMsg, setSaveMsg] = React.useState("");
 
             const [habitsData, setHabitsData] = React.useState({ owned: {}, wish: {}, all: [] });
-            const [inactiveIds, setInactiveIds] = React.useState(new Set()); 
+            
+            const [inactiveIds, setInactiveIds] = React.useState(() => {
+                const saved = localStorage.getItem("inactive_habit_ids");
+                return saved ? new Set(JSON.parse(saved)) : new Set();
+            }); 
             const [editModalItem, setEditModalItem] = React.useState(null); 
 
             const [title, setTitle] = React.useState("");
@@ -208,6 +209,8 @@
                     const next = new Set(prev);
                     if (next.has(id)) next.delete(id);
                     else next.add(id);
+                    
+                    localStorage.setItem("inactive_habit_ids", JSON.stringify([...next]));
                     return next;
                 });
             };
@@ -229,6 +232,14 @@
             const handleDeleteFromModal = async (id) => {
                 try {
                     await fetch(`${API_BASE_URL}/api/habits/${id}`, { method: "DELETE" });
+                    
+                    setInactiveIds(prev => {
+                        const next = new Set(prev);
+                        next.delete(id);
+                        localStorage.setItem("inactive_habit_ids", JSON.stringify([...next]));
+                        return next;
+                    });
+
                     setEditModalItem(null);
                     loadHabits();
                 } catch (err) {
@@ -331,9 +342,19 @@
                                     const owned = (habitsData.owned && habitsData.owned[cat]) || [];
                                     const wish = (habitsData.wish && habitsData.wish[cat]) || [];
 
-                                    const sortedOwned = [...owned].sort((a, b) => 
-                                        (LEVEL_ORDER[a.level] || 2) - (LEVEL_ORDER[b.level] || 2)
-                                    );
+                                    /* 
+                                      비활성화 상태인 습관은 탑 아래로(배열 앞쪽), 
+                                      활성화 상태인 습관은 탑 위로(배열 뒤쪽) 정렬합니다.
+                                    */
+                                    const sortedOwned = [...owned].sort((a, b) => {
+                                        const aActive = !inactiveIds.has(a.id) ? 1 : 0;
+                                        const bActive = !inactiveIds.has(b.id) ? 1 : 0;
+
+                                        if (aActive !== bActive) {
+                                            return aActive - bActive;
+                                        }
+                                        return (LEVEL_ORDER[a.level] || 2) - (LEVEL_ORDER[b.level] || 2);
+                                    });
 
                                     return (
                                         <div key={cat} className="category-wrapper">
@@ -402,3 +423,4 @@
     </script>
 </body>
 </html>
+
