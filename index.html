@@ -19,80 +19,26 @@
             overflow-x: hidden; 
         }
 
-        /* 상단 파란색 네비게이션 탭 */
-        .top-nav {
-            display: flex;
-            justify-content: space-around;
-            gap: 6px;
-            margin-bottom: 16px;
-            background-color: #edf2f7;
-            padding: 5px;
-            border-radius: 12px;
-        }
-        .top-nav-item {
-            flex: 1;
-            padding: 8px 4px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            background: transparent;
-            color: #718096;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-        .top-nav-item.active {
-            background-color: #3182ce;
-            color: #ffffff;
-            box-shadow: 0 2px 6px rgba(49, 130, 206, 0.3);
-        }
+        /* 상단 네비게이션 */
+        .top-nav { display: flex; justify-content: space-around; gap: 6px; margin-bottom: 16px; background-color: #edf2f7; padding: 5px; border-radius: 12px; }
+        .top-nav-item { flex: 1; padding: 8px 4px; font-size: 0.78rem; font-weight: 600; border: none; border-radius: 8px; background: transparent; color: #718096; cursor: pointer; transition: all 0.2s ease; text-align: center; touch-action: manipulation; }
+        .top-nav-item.active { background-color: #3182ce; color: #ffffff; box-shadow: 0 2px 6px rgba(49, 130, 206, 0.3); }
 
-        /* 3개 슬라이드 컨테이너 */
+        /* 슬라이드 컨테이너 */
         .slider-container { display: flex; width: 300%; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
         .slide-page { width: 33.333%; padding: 4px; flex-shrink: 0; }
 
         /* Silence 카드 */
-        .silence-card {
-            background: linear-gradient(135deg, #ebf8ff 0%, #e9d8fd 100%);
-            border-radius: 16px;
-            padding: 32px 20px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 480px;
-        }
+        .silence-card { background: linear-gradient(135deg, #ebf8ff 0%, #e9d8fd 100%); border-radius: 16px; padding: 32px 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 480px; }
         .silence-title { font-size: 1.4rem; font-weight: 700; color: #4a5568; margin-bottom: 8px; }
         .silence-subtitle { font-size: 0.85rem; color: #718096; margin-bottom: 28px; }
 
-        .breathe-circle {
-            width: 140px; height: 140px; border-radius: 50%;
-            background: rgba(255, 255, 255, 0.6); border: 2px solid #b3d8ff;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; margin-bottom: 30px;
-            box-shadow: 0 0 20px rgba(147, 197, 253, 0.4);
-            animation: breathe 8s infinite ease-in-out;
-        }
-        @keyframes breathe {
-            0%, 100% { transform: scale(0.95); opacity: 0.8; }
-            50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4); }
-        }
+        .breathe-circle { width: 140px; height: 140px; border-radius: 50%; background: rgba(255, 255, 255, 0.6); border: 2px solid #b3d8ff; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin-bottom: 30px; box-shadow: 0 0 20px rgba(147, 197, 253, 0.4); animation: breathe 8s infinite ease-in-out; }
+        @keyframes breathe { 0%, 100% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4); } }
 
         /* Affirmation 카드 */
-        .affirmation-card {
-            background: #ffffff; border-radius: 16px; padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
-            min-height: 480px; display: flex; flex-direction: column;
-        }
-        .mission-textarea {
-            width: 100%; flex: 1; min-height: 280px; margin-top: 12px; padding: 14px;
-            border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.88rem;
-            line-height: 1.6; color: #2d3748; resize: none; outline: none;
-            background-color: #f8fafc; font-family: inherit;
-        }
+        .affirmation-card { background: #ffffff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; min-height: 480px; display: flex; flex-direction: column; }
+        .mission-textarea { width: 100%; flex: 1; min-height: 280px; margin-top: 12px; padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.88rem; line-height: 1.6; color: #2d3748; resize: none; outline: none; background-color: #f8fafc; font-family: inherit; }
         .mission-textarea:focus { border-color: #3182ce; background-color: #ffffff; }
         .mission-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
         .save-toast { font-size: 0.75rem; color: #38a169; font-weight: 600; }
@@ -102,7 +48,7 @@
         .card { background: #ffffff; border: 1px solid #e9ecef; border-radius: 10px; padding: 12px; margin-bottom: 14px; font-size: 0.8rem; }
         .form-group { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
         input, select, button { padding: 8px 10px; font-size: 0.8rem; border: 1px solid #dde2e5; border-radius: 6px; outline: none; }
-        button { background-color: #3182ce; color: white; border: none; font-weight: 600; cursor: pointer; }
+        button { background-color: #3182ce; color: white; border: none; font-weight: 600; cursor: pointer; touch-action: manipulation; }
 
         .tower-grid { display: flex; gap: 6px; width: 100%; justify-content: space-between; align-items: stretch; }
         .category-wrapper { flex: 1; display: flex; flex-direction: column; gap: 6px; }
@@ -119,17 +65,11 @@
             width: 94%; border-radius: 6px; padding: 6px 4px; font-size: 0.65rem; text-align: center; 
             word-break: break-all; background: #ffffff; font-weight: 600;
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-            cursor: pointer; user-select: none; transition: all 0.2s ease;
+            cursor: pointer; user-select: none; transition: background-color 0.1s, opacity 0.1s, transform 0.05s;
+            touch-action: manipulation;
         }
-        
-        /* 비활성화 상태 스타일링 */
-        .habit-block.inactive {
-            opacity: 0.4;
-            background-color: #edf2f7 !important;
-            border-color: #cbd5e0 !important;
-            color: #a0aec0 !important;
-            box-shadow: none;
-        }
+        .habit-block:active { transform: scale(0.95); }
+        .habit-block.inactive { opacity: 0.35; background-color: #edf2f7 !important; border-color: #cbd5e0 !important; color: #a0aec0 !important; box-shadow: none; }
 
         .block-study { color: #e53e3e; border: 1px solid #feb2b2; }
         .block-hobby { color: #dd6b20; border: 1px solid #fbd38d; }
@@ -142,19 +82,12 @@
 
         .waiting-zone { height: 150px; flex-shrink: 0; background-color: #f8f9fa; border: 1.5px dashed #cbd5e0; border-radius: 8px; padding: 6px 2px; text-align: center; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
         .waiting-title { font-size: 0.58rem; color: #718096; font-weight: 700; margin-bottom: 4px; flex-shrink: 0; }
-        .waiting-chip { background-color: #ffffff; border-radius: 4px; padding: 5px 3px; margin: 2px auto; width: 90%; font-size: 0.6rem; color: #4a5568; border: 1px solid #e2e8f0; text-align: center; cursor: pointer; user-select: none; }
+        .waiting-chip { background-color: #ffffff; border-radius: 4px; padding: 5px 3px; margin: 2px auto; width: 90%; font-size: 0.6rem; color: #4a5568; border: 1px solid #e2e8f0; text-align: center; cursor: pointer; user-select: none; touch-action: manipulation; }
+        .waiting-chip:active { transform: scale(0.95); }
 
-        /* 꾹 눌렀을 때 뜨는 설정 모달 스타일 */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.4); display: flex;
-            align-items: center; justify-content: center; z-index: 2000;
-        }
-        .modal-card {
-            background: #ffffff; width: 85%; max-width: 320px;
-            border-radius: 14px; padding: 20px; text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        }
+        /* 모달 스타일 */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-card { background: #ffffff; width: 85%; max-width: 320px; border-radius: 14px; padding: 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
         .modal-title { font-size: 1rem; font-weight: 700; margin-bottom: 12px; }
         .modal-btn-group { display: flex; gap: 6px; margin-bottom: 12px; }
         .modal-btn { flex: 1; padding: 8px 0; font-size: 0.78rem; border-radius: 6px; }
@@ -192,33 +125,45 @@
             );
         }
 
-        // 습관 블록 컴포넌트 (터치/롱프레스 제어)
+        // 반응 속도 최적화 습관 블록
         function HabitBlockItem({ item, cls, isActive, onToggleActive, onLongPress }) {
             const timerRef = React.useRef(null);
             const isLongPressRef = React.useRef(false);
 
-            const handleStart = (e) => {
+            const handlePointerDown = () => {
                 isLongPressRef.current = false;
                 timerRef.current = setTimeout(() => {
                     isLongPressRef.current = true;
+                    if (window.navigator && window.navigator.vibrate) {
+                        window.navigator.vibrate(30);
+                    }
                     onLongPress(item);
-                }, 500); // 0.5초 꾹 누르면 모달 실행
+                }, 300); // 꾹 누르기(300ms)
             };
 
-            const handleEnd = (e) => {
+            const handlePointerUp = () => {
                 if (timerRef.current) clearTimeout(timerRef.current);
-                if (!isLongPressRef.current) {
-                    onToggleActive(item.id); // 일반 터치: 활성/비활성 토글
+            };
+
+            const handleClick = (e) => {
+                e.stopPropagation();
+                // 꾹 누르기 상태였다면 일반 클릭 동작 무시
+                if (isLongPressRef.current) {
+                    isLongPressRef.current = false;
+                    return;
                 }
+                // 살짝 탭했을 때 지연 없이 즉시 토글 실행
+                onToggleActive(item.id);
             };
 
             return (
                 <div 
                     className={`habit-block block-${cls} ${!isActive ? 'inactive' : ''}`}
-                    onTouchStart={handleStart}
-                    onTouchEnd={handleEnd}
-                    onMouseDown={handleStart}
-                    onMouseUp={handleEnd}
+                    onPointerDown={handlePointerDown}
+                    onPointerUp={handlePointerUp}
+                    onPointerLeave={handlePointerUp}
+                    onPointerCancel={handlePointerUp}
+                    onClick={handleClick}
                 >
                     <span>{item.title}</span>
                     <LevelGauge level={item.level} />
@@ -234,8 +179,8 @@
             const [saveMsg, setSaveMsg] = React.useState("");
 
             const [habitsData, setHabitsData] = React.useState({ owned: {}, wish: {}, all: [] });
-            const [inactiveIds, setInactiveIds] = React.useState(new Set()); // 비활성화 습관 ID 관리
-            const [editModalItem, setEditModalItem] = React.useState(null); // 꾹 눌렀을 때 모달 대상
+            const [inactiveIds, setInactiveIds] = React.useState(new Set()); 
+            const [editModalItem, setEditModalItem] = React.useState(null); 
 
             const [title, setTitle] = React.useState("");
             const [category, setCategory] = React.useState("공부");
@@ -258,7 +203,6 @@
                 return () => clearInterval(interval);
             }, []);
 
-            // 1회 터치 시 비활성/활성 토글
             const handleToggleActive = (id) => {
                 setInactiveIds(prev => {
                     const next = new Set(prev);
@@ -268,7 +212,6 @@
                 });
             };
 
-            // 꾹 눌렀을 때 수준 변경
             const handleChangeLevel = async (item, newLevel) => {
                 try {
                     await fetch(`${API_BASE_URL}/api/habits/${item.id}`, {
@@ -283,7 +226,6 @@
                 }
             };
 
-            // 꾹 눌렀을 때 삭제
             const handleDeleteFromModal = async (id) => {
                 try {
                     await fetch(`${API_BASE_URL}/api/habits/${id}`, { method: "DELETE" });
@@ -331,23 +273,13 @@
 
             return (
                 <div>
-                    {/* 상단 네비게이션 */}
                     <div className="top-nav">
-                        <button className={`top-nav-item ${currentPage === 0 ? 'active' : ''}`} onClick={() => setCurrentPage(0)}>
-                            🧘 Silence
-                        </button>
-                        <button className={`top-nav-item ${currentPage === 1 ? 'active' : ''}`} onClick={() => setCurrentPage(1)}>
-                            📜 사명서
-                        </button>
-                        <button className={`top-nav-item ${currentPage === 2 ? 'active' : ''}`} onClick={() => setCurrentPage(2)}>
-                            🏛️ 습관 탑
-                        </button>
+                        <button className={`top-nav-item ${currentPage === 0 ? 'active' : ''}`} onClick={() => setCurrentPage(0)}>🧘 Silence</button>
+                        <button className={`top-nav-item ${currentPage === 1 ? 'active' : ''}`} onClick={() => setCurrentPage(1)}>📜 사명서</button>
+                        <button className={`top-nav-item ${currentPage === 2 ? 'active' : ''}`} onClick={() => setCurrentPage(2)}>🏛️ 습관 탑</button>
                     </div>
 
-                    {/* 슬라이드 컨테이너 */}
                     <div className="slider-container" style={{ transform: `translateX(-${currentPage * (100 / 3)}%)` }}>
-                        
-                        {/* Slide 1: Silence */}
                         <div className="slide-page">
                             <div className="silence-card">
                                 <div className="silence-title">🧘‍♂️ 1. Silence (침묵)</div>
@@ -356,45 +288,27 @@
                             </div>
                         </div>
 
-                        {/* Slide 2: 사명서 */}
                         <div className="slide-page">
                             <div className="affirmation-card">
-                                <h1 style={{ textAlign: 'left', marginBottom: '4px' }}>📜 2. Affirmation (사명서)</h1>
-                                <div style={{ fontSize: '0.75rem', color: '#718096' }}>
-                                    성공하는 사람들의 7가지 습관 : 나의 개인 사명서
-                                </div>
-                                <textarea
-                                    className="mission-textarea"
-                                    value={mission}
-                                    onChange={(e) => setMission(e.target.value)}
-                                />
+                                <h1 style={{ textAlign: 'left', marginBottom: '4px' }}>📜 2. Affirmation</h1>
+                                <div style={{ fontSize: '0.75rem', color: '#718096' }}>성공하는 사람들의 7가지 습관</div>
+                                <textarea className="mission-textarea" value={mission} onChange={(e) => setMission(e.target.value)} />
                                 <div className="mission-actions">
                                     <span className="save-toast">{saveMsg}</span>
-                                    <button onClick={handleSaveMission} style={{ padding: '8px 16px', borderRadius: '8px' }}>
-                                        사명서 저장하기
-                                    </button>
+                                    <button onClick={handleSaveMission} style={{ padding: '8px 16px', borderRadius: '8px' }}>저장하기</button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Slide 3: 습관 탑 */}
                         <div className="slide-page">
                             <h1>🏛️ 나의 습관 탑</h1>
 
                             <details className="card">
                                 <summary>➕ 습관 블록 추가</summary>
                                 <form onSubmit={handleAddHabit} className="form-group">
-                                    <input
-                                        type="text"
-                                        placeholder="예: 하루 30분 독서"
-                                        value={title}
-                                        onChange={(e) => setTitle(e.target.value)}
-                                        required
-                                    />
+                                    <input type="text" placeholder="예: 하루 30분 독서" value={title} onChange={(e) => setTitle(e.target.value)} required />
                                     <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                                        {CATEGORIES.map(cat => (
-                                            <option key={cat} value={cat}>{CAT_ICONS[cat]} {cat}</option>
-                                        ))}
+                                        {CATEGORIES.map(cat => <option key={cat} value={cat}>{CAT_ICONS[cat]} {cat}</option>)}
                                     </select>
                                     <select value={status} onChange={(e) => setStatus(e.target.value)}>
                                         <option value="보유 습관">보유 습관</option>
@@ -426,16 +340,12 @@
                                             <div className={`tower-col col-${cls}`}>
                                                 <div className="tower-header">
                                                     {CAT_ICONS[cat]} {cat}<br />
-                                                    <span style={{ fontWeight: 'normal', fontSize: '0.55rem', color: '#718096' }}>
-                                                        ({owned.length}개)
-                                                    </span>
+                                                    <span style={{ fontWeight: 'normal', fontSize: '0.55rem', color: '#718096' }}>({owned.length}개)</span>
                                                 </div>
                                                 <div className="tower-blocks">
                                                     {sortedOwned.map(item => (
                                                         <HabitBlockItem
-                                                            key={item.id}
-                                                            item={item}
-                                                            cls={cls}
+                                                            key={item.id} item={item} cls={cls}
                                                             isActive={!inactiveIds.has(item.id)}
                                                             onToggleActive={handleToggleActive}
                                                             onLongPress={(targetItem) => setEditModalItem(targetItem)}
@@ -447,13 +357,8 @@
                                                 <div className="waiting-title">⏳ 대기 중</div>
                                                 {wish.length > 0 ? (
                                                     wish.map(w => (
-                                                        <div 
-                                                            key={w.id} 
-                                                            className="waiting-chip"
-                                                            onClick={() => handlePromoteToOwned(w)}
-                                                        >
+                                                        <div key={w.id} className="waiting-chip" onClick={() => handlePromoteToOwned(w)}>
                                                             <span>{w.title}</span>
-                                                            <LevelGauge level="하" />
                                                         </div>
                                                     ))
                                                 ) : (
@@ -467,7 +372,6 @@
                         </div>
                     </div>
 
-                    {/* 꾹 눌렀을 때 열리는 정보 설정/삭제 모달 */}
                     {editModalItem && (
                         <div className="modal-overlay" onClick={() => setEditModalItem(null)}>
                             <div className="modal-card" onClick={e => e.stopPropagation()}>
@@ -475,34 +379,16 @@
                                 
                                 <p style={{ fontSize: '0.75rem', color: '#718096', marginBottom: '8px' }}>수준 변경</p>
                                 <div className="modal-btn-group">
-                                    <button 
-                                        className="modal-btn" 
-                                        style={{ backgroundColor: editModalItem.level === '상' ? '#3182ce' : '#e2e8f0', color: editModalItem.level === '상' ? '#fff' : '#4a5568' }}
-                                        onClick={() => handleChangeLevel(editModalItem, '상')}
-                                    >상 (3칸)</button>
-                                    <button 
-                                        className="modal-btn"
-                                        style={{ backgroundColor: editModalItem.level === '중' ? '#3182ce' : '#e2e8f0', color: editModalItem.level === '중' ? '#fff' : '#4a5568' }}
-                                        onClick={() => handleChangeLevel(editModalItem, '중')}
-                                    >중 (2칸)</button>
-                                    <button 
-                                        className="modal-btn"
-                                        style={{ backgroundColor: editModalItem.level === '하' ? '#3182ce' : '#e2e8f0', color: editModalItem.level === '하' ? '#fff' : '#4a5568' }}
-                                        onClick={() => handleChangeLevel(editModalItem, '하')}
-                                    >하 (1칸)</button>
+                                    <button className="modal-btn" style={{ backgroundColor: editModalItem.level === '상' ? '#3182ce' : '#e2e8f0', color: editModalItem.level === '상' ? '#fff' : '#4a5568' }} onClick={() => handleChangeLevel(editModalItem, '상')}>상 (3칸)</button>
+                                    <button className="modal-btn" style={{ backgroundColor: editModalItem.level === '중' ? '#3182ce' : '#e2e8f0', color: editModalItem.level === '중' ? '#fff' : '#4a5568' }} onClick={() => handleChangeLevel(editModalItem, '중')}>중 (2칸)</button>
+                                    <button className="modal-btn" style={{ backgroundColor: editModalItem.level === '하' ? '#3182ce' : '#e2e8f0', color: editModalItem.level === '하' ? '#fff' : '#4a5568' }} onClick={() => handleChangeLevel(editModalItem, '하')}>하 (1칸)</button>
                                 </div>
 
-                                <button 
-                                    style={{ backgroundColor: '#e53e3e', width: '100%', padding: '9px', borderRadius: '8px', marginBottom: '8px' }}
-                                    onClick={() => handleDeleteFromModal(editModalItem.id)}
-                                >
+                                <button style={{ backgroundColor: '#e53e3e', color: 'white', width: '100%', padding: '9px', borderRadius: '8px', marginBottom: '8px', border: 'none' }} onClick={() => handleDeleteFromModal(editModalItem.id)}>
                                     🗑️ 습관 삭제하기
                                 </button>
                                 
-                                <button 
-                                    style={{ backgroundColor: '#cbd5e0', color: '#4a5568', width: '100%', padding: '8px', borderRadius: '8px' }}
-                                    onClick={() => setEditModalItem(null)}
-                                >
+                                <button style={{ backgroundColor: '#cbd5e0', color: '#4a5568', width: '100%', padding: '8px', borderRadius: '8px', border: 'none' }} onClick={() => setEditModalItem(null)}>
                                     닫기
                                 </button>
                             </div>
@@ -516,4 +402,3 @@
     </script>
 </body>
 </html>
-
