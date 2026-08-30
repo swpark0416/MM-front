@@ -37,20 +37,22 @@
             width: 94%; border-radius: 6px; padding: 6px 4px; font-size: 0.65rem; text-align: center; 
             word-break: break-all; background: #ffffff; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+            cursor: pointer; user-select: none; transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
+        .habit-block:hover { transform: translateY(-2px); box-shadow: 0 3px 6px rgba(0,0,0,0.08); }
         
         .block-study { color: #e53e3e; border: 1px solid #feb2b2; }
         .block-hobby { color: #dd6b20; border: 1px solid #fbd38d; }
         .block-body  { color: #3182ce; border: 1px solid #90cdf4; }
         .block-mind  { color: #805ad5; border: 1px solid #d6bcfa; }
 
-        /* 3칸 직사각형 게이지 스타일 */
         .battery-gauge {
             display: flex;
             gap: 2px;
             align-items: center;
             justify-content: center;
             margin-top: 1px;
+            padding: 2px;
         }
         .gauge-bar {
             width: 7px;
@@ -80,10 +82,12 @@
         }
         .waiting-title { font-size: 0.58rem; color: #718096; font-weight: 700; margin-bottom: 4px; flex-shrink: 0; }
         .waiting-chip { 
-            background-color: #ffffff; border-radius: 4px; padding: 4px 2px; margin: 2px auto; 
+            background-color: #ffffff; border-radius: 4px; padding: 5px 3px; margin: 2px auto; 
             width: 90%; font-size: 0.6rem; color: #4a5568; border: 1px solid #e2e8f0; 
             word-break: break-all; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 2px;
+            cursor: pointer; user-select: none; transition: transform 0.15s ease, background 0.15s ease;
         }
+        .waiting-chip:hover { transform: translateY(-1px); background-color: #f0fff4; border-color: #9ae6b4; }
     </style>
 </head>
 <body>
@@ -94,12 +98,18 @@
         const CATEGORIES = ["공부", "취미", "외면", "내면"];
         const CAT_ICONS = { "공부": "📚", "취미": "🎨", "외면": "💪", "내면": "🧘" };
         const CAT_CLASSES = { "공부": "study", "취미": "hobby", "외면": "body", "내면": "mind" };
+        
+        // 터치 시 수준 순환: 하 -> 중 -> 상 -> 하
+        const NEXT_LEVEL = { "하": "중", "중": "상", "상": "하" };
 
-        // 수준(상/중/하)에 따라 3개 직사각형 칸을 채우는 컴포넌트
-        function LevelGauge({ level }) {
+        function LevelGauge({ level, onClick }) {
             const filledCount = level === "상" ? 3 : level === "중" ? 2 : 1;
             return (
-                <div className="battery-gauge">
+                <div 
+                    className="battery-gauge" 
+                    onClick={onClick} 
+                    title="클릭하여 수준 변경 (하 -> 중 -> 상)"
+                >
                     {[1, 2, 3].map(num => (
                         <div 
                             key={num} 
@@ -149,6 +159,38 @@
 
                 setTitle("");
                 loadHabits();
+            };
+
+            const handleCycleLevel = async (item, e) => {
+                if (e) e.stopPropagation();
+                const nextLvl = NEXT_LEVEL[item.level] || "중";
+
+                try {
+                    await fetch(`${API_BASE_URL}/api/habits/${item.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ level: nextLvl })
+                    });
+                    loadHabits();
+                } catch (err) {
+                    console.error("수준 변경 실패:", err);
+                }
+            };
+
+            const handlePromoteToOwned = async (item) => {
+                const isConfirmed = window.confirm(`'${item.title}' 습관을 보유 습관 탑으로 올리시겠습니까?`);
+                if (!isConfirmed) return;
+
+                try {
+                    await fetch(`${API_BASE_URL}/api/habits/${item.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: "보유 습관" })
+                    });
+                    loadHabits();
+                } catch (err) {
+                    console.error("습관 승격 실패:", err);
+                }
             };
 
             const handleDeleteHabit = async () => {
@@ -210,7 +252,12 @@
                                         </div>
                                         <div className="tower-blocks">
                                             {owned.map(item => (
-                                                <div key={item.id} className={`habit-block block-${cls}`}>
+                                                <div 
+                                                    key={item.id} 
+                                                    className={`habit-block block-${cls}`}
+                                                    onClick={(e) => handleCycleLevel(item, e)}
+                                                    title="터치하여 수준 변경"
+                                                >
                                                     <span>{item.title}</span>
                                                     <LevelGauge level={item.level} />
                                                 </div>
@@ -221,9 +268,17 @@
                                         <div className="waiting-title">⏳ 대기 중 습관</div>
                                         {wish.length > 0 ? (
                                             wish.map(w => (
-                                                <div key={w.id} className="waiting-chip">
-                                                    <span>📌 {w.title}</span>
-                                                    <LevelGauge level={w.level} />
+                                                <div 
+                                                    key={w.id} 
+                                                    className="waiting-chip"
+                                                    onClick={() => handlePromoteToOwned(w)}
+                                                    title="터치하여 습관 탑으로 올리기"
+                                                >
+                                                    <span>{w.title}</span>
+                                                    <LevelGauge 
+                                                        level={w.level} 
+                                                        onClick={(e) => handleCycleLevel(w, e)} 
+                                                    />
                                                 </div>
                                             ))
                                         ) : (
