@@ -13,10 +13,11 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: #f7fafc; 
             color: #2d3748; 
-            padding: 16px 16px 80px 16px; /* 하단 네비게이션 공간 확보 */
+            padding: 16px 16px 80px 16px; /* 하단 네비게이션 바 공간 확보 */
             max-width: 600px; 
             margin: 0 auto; 
             overflow-x: hidden; 
+            user-select: none;
         }
 
         /* 3개 슬라이드 컨테이너 */
@@ -46,9 +47,9 @@
             font-size: 0.7rem;
             color: #a0aec0;
             cursor: pointer;
-            transition: color 0.2s, transform 0.2s;
             border: none;
             background: none;
+            transition: color 0.2s;
         }
         .nav-item.active {
             color: #3182ce;
@@ -67,7 +68,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 480px;
+            min-height: 500px;
         }
         .silence-title { font-size: 1.4rem; font-weight: 700; color: #4a5568; margin-bottom: 8px; }
         .silence-subtitle { font-size: 0.85rem; color: #718096; margin-bottom: 28px; }
@@ -98,14 +99,14 @@
             padding: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.03);
             border: 1px solid #e2e8f0;
-            min-height: 480px;
+            min-height: 500px;
             display: flex;
             flex-direction: column;
         }
         .mission-textarea {
             width: 100%;
             flex: 1;
-            min-height: 280px;
+            min-height: 300px;
             margin-top: 12px;
             padding: 14px;
             border: 1px solid #e2e8f0;
@@ -168,7 +169,7 @@
 
         .waiting-zone { height: 150px; flex-shrink: 0; background-color: #f8f9fa; border: 1.5px dashed #cbd5e0; border-radius: 8px; padding: 6px 2px; text-align: center; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
         .waiting-title { font-size: 0.58rem; color: #718096; font-weight: 700; margin-bottom: 4px; flex-shrink: 0; }
-        .waiting-chip { background-color: #ffffff; border-radius: 4px; padding: 5px 3px; margin: 2px auto; width: 90%; font-size: 0.6rem; color: #4a5568; border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+        .waiting-chip { background-color: #ffffff; border-radius: 4px; padding: 6px 4px; margin: 2px auto; width: 90%; font-size: 0.6rem; color: #4a5568; border: 1px solid #e2e8f0; text-align: center; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -206,10 +207,6 @@
 
         function App() {
             const [currentPage, setCurrentPage] = React.useState(0);
-            const [touchStart, setTouchStart] = React.useState(0);
-            const [touchEnd, setTouchEnd] = React.useState(0);
-
-            // 사명서 상태 및 저장 안내 문구
             const [mission, setMission] = React.useState(() => {
                 return localStorage.getItem("my_mission_statement") || DEFAULT_MISSION;
             });
@@ -241,23 +238,26 @@
                 return () => clearInterval(interval);
             }, []);
 
-            // 사명서 저장 로직
+            // 화면 터치/클릭 페이지 전환 (버튼/입력창/하단 바 제외)
+            const handleScreenTap = (e) => {
+                if (e.target.closest('button, input, select, textarea, details, .habit-block, .waiting-chip, .bottom-nav')) {
+                    return;
+                }
+
+                const clickX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+                const screenWidth = window.innerWidth;
+
+                if (clickX > screenWidth * 0.5) {
+                    setCurrentPage(prev => Math.min(prev + 1, 2));
+                } else {
+                    setCurrentPage(prev => Math.max(prev - 1, 0));
+                }
+            };
+
             const handleSaveMission = () => {
                 localStorage.setItem("my_mission_statement", mission);
                 setSaveMsg("✓ 저장되었습니다.");
                 setTimeout(() => setSaveMsg(""), 2000);
-            };
-
-            // 터치 스와이프 제스처 처리 (총 3페이지: 0, 1, 2)
-            const handleTouchStart = (e) => setTouchStart(e.targetTouches[0].clientX);
-            const handleTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
-            const handleTouchEnd = () => {
-                if (!touchStart || !touchEnd) return;
-                const distance = touchStart - touchEnd;
-                if (distance > 50 && currentPage < 2) setCurrentPage(currentPage + 1);
-                if (distance < -50 && currentPage > 0) setCurrentPage(currentPage - 1);
-                setTouchStart(0);
-                setTouchEnd(0);
             };
 
             const handleAddHabit = async (e) => {
@@ -311,11 +311,7 @@
             };
 
             return (
-                <div 
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
-                >
+                <div onClick={handleScreenTap}>
                     {/* 슬라이드 영역 */}
                     <div className="slider-container" style={{ transform: `translateX(-${currentPage * (100 / 3)}%)` }}>
                         
@@ -325,6 +321,7 @@
                                 <div className="silence-title">🧘‍♂️ 1. Silence (침묵)</div>
                                 <div className="silence-subtitle">고요히 숨을 쉬며 마음을 정리해 보세요</div>
                                 <div className="breathe-circle">✨</div>
+                                <div style={{ fontSize: '0.75rem', color: '#a0aec0' }}>오른쪽 화면을 탭하거나 하단 네비게이션으로 이동</div>
                             </div>
                         </div>
 
@@ -426,7 +423,6 @@
                                                             onClick={() => handlePromoteToOwned(w)}
                                                         >
                                                             <span>{w.title}</span>
-                                                            <LevelGauge level="하" />
                                                         </div>
                                                     ))
                                                 ) : (
