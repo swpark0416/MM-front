@@ -21,8 +21,8 @@
         button { background-color: #3182ce; color: white; border: none; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         button:hover { background-color: #2b6cb0; }
 
+        /* 보유 습관 탑 레이아웃 */
         .tower-grid { display: flex; gap: 6px; width: 100%; justify-content: space-between; align-items: stretch; }
-        .category-wrapper { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 
         .tower-col { flex: 1; display: flex; flex-direction: column; border-radius: 10px; padding: 8px 4px; min-height: 350px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
         .col-study { background-color: #fff5f5; border: 1px solid #fed7d7; }
@@ -67,23 +67,38 @@
             opacity: 0.85;
         }
 
+        /* 중앙 통합 대기 영역 스타일 */
+        .waiting-section {
+            margin-top: 10px;
+            background-color: #f8f9fa;
+            border: 1.5px dashed #cbd5e0;
+            border-radius: 10px;
+            padding: 8px 6px;
+        }
+        .waiting-main-title {
+            text-align: center;
+            font-size: 0.68rem;
+            color: #718096;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .waiting-grid {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+            justify-content: space-between;
+        }
         .waiting-zone { 
-            height: 150px; 
-            flex-shrink: 0; 
-            background-color: #f8f9fa; 
-            border: 1.5px dashed #cbd5e0; 
-            border-radius: 8px; 
-            padding: 6px 2px; 
-            text-align: center; 
+            flex: 1;
+            height: 120px; 
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        .waiting-title { font-size: 0.58rem; color: #718096; font-weight: 700; margin-bottom: 4px; flex-shrink: 0; }
         .waiting-chip { 
             background-color: #ffffff; border-radius: 4px; padding: 5px 3px; margin: 2px auto; 
-            width: 90%; font-size: 0.6rem; color: #4a5568; border: 1px solid #e2e8f0; 
+            width: 92%; font-size: 0.6rem; color: #4a5568; border: 1px solid #e2e8f0; 
             word-break: break-all; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 2px;
             cursor: pointer; user-select: none; transition: transform 0.15s ease, background 0.15s ease;
         }
@@ -99,17 +114,12 @@
         const CAT_ICONS = { "공부": "📚", "취미": "🎨", "외면": "💪", "내면": "🧘" };
         const CAT_CLASSES = { "공부": "study", "취미": "hobby", "외면": "body", "내면": "mind" };
         
-        // 터치 시 수준 순환: 하 -> 중 -> 상 -> 하
         const NEXT_LEVEL = { "하": "중", "중": "상", "상": "하" };
 
-        function LevelGauge({ level, onClick }) {
+        function LevelGauge({ level }) {
             const filledCount = level === "상" ? 3 : level === "중" ? 2 : 1;
             return (
-                <div 
-                    className="battery-gauge" 
-                    onClick={onClick} 
-                    title="클릭하여 수준 변경 (하 -> 중 -> 상)"
-                >
+                <div className="battery-gauge">
                     {[1, 2, 3].map(num => (
                         <div 
                             key={num} 
@@ -151,10 +161,12 @@
                 e.preventDefault();
                 if (!title.trim()) return;
 
+                const submitLevel = status === "만들고 싶은 습관" ? "하" : level;
+
                 await fetch(`${API_BASE_URL}/api/habits`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ title, category, status, level })
+                    body: JSON.stringify({ title, category, status, level: submitLevel })
                 });
 
                 setTitle("");
@@ -185,7 +197,7 @@
                     await fetch(`${API_BASE_URL}/api/habits/${item.id}`, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ status: "보유 습관" })
+                        body: JSON.stringify({ status: "보유 습관", level: "하" })
                     });
                     loadHabits();
                 } catch (err) {
@@ -226,46 +238,57 @@
                                 <option value="보유 습관">보유 습관</option>
                                 <option value="만들고 싶은 습관">만들고 싶은 습관</option>
                             </select>
-                            <select value={level} onChange={(e) => setLevel(e.target.value)}>
-                                <option value="상">수준: 상 (3칸)</option>
-                                <option value="중">수준: 중 (2칸)</option>
-                                <option value="하">수준: 하 (1칸)</option>
-                            </select>
+                            {status === "보유 습관" && (
+                                <select value={level} onChange={(e) => setLevel(e.target.value)}>
+                                    <option value="상">수준: 상 (3칸)</option>
+                                    <option value="중">수준: 중 (2칸)</option>
+                                    <option value="하">수준: 하 (1칸)</option>
+                                </select>
+                            )}
                             <button type="submit">저장하기</button>
                         </form>
                     </details>
 
+                    {/* 1. 보유 습관 탑 영역 */}
                     <div className="tower-grid">
                         {CATEGORIES.map(cat => {
                             const cls = CAT_CLASSES[cat];
                             const owned = (habitsData.owned && habitsData.owned[cat]) || [];
-                            const wish = (habitsData.wish && habitsData.wish[cat]) || [];
 
                             return (
-                                <div key={cat} className="category-wrapper">
-                                    <div className={`tower-col col-${cls}`}>
-                                        <div className="tower-header">
-                                            {CAT_ICONS[cat]} {cat}<br />
-                                            <span style={{ fontWeight: 'normal', fontSize: '0.55rem', color: '#718096' }}>
-                                                ({owned.length}개)
-                                            </span>
-                                        </div>
-                                        <div className="tower-blocks">
-                                            {owned.map(item => (
-                                                <div 
-                                                    key={item.id} 
-                                                    className={`habit-block block-${cls}`}
-                                                    onClick={(e) => handleCycleLevel(item, e)}
-                                                    title="터치하여 수준 변경"
-                                                >
-                                                    <span>{item.title}</span>
-                                                    <LevelGauge level={item.level} />
-                                                </div>
-                                            ))}
-                                        </div>
+                                <div key={cat} className={`tower-col col-${cls}`}>
+                                    <div className="tower-header">
+                                        {CAT_ICONS[cat]} {cat}<br />
+                                        <span style={{ fontWeight: 'normal', fontSize: '0.55rem', color: '#718096' }}>
+                                            ({owned.length}개)
+                                        </span>
                                     </div>
-                                    <div className="waiting-zone">
-                                        <div className="waiting-title">⏳ 대기 중 습관</div>
+                                    <div className="tower-blocks">
+                                        {owned.map(item => (
+                                            <div 
+                                                key={item.id} 
+                                                className={`habit-block block-${cls}`}
+                                                onClick={(e) => handleCycleLevel(item, e)}
+                                                title="터치하여 수준 변경 (하 -> 중 -> 상)"
+                                            >
+                                                <span>{item.title}</span>
+                                                <LevelGauge level={item.level} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* 2. 중앙 통합 대기 중 습관 영역 */}
+                    <div className="waiting-section">
+                        <div className="waiting-main-title">⏳ 대기 중 습관</div>
+                        <div className="waiting-grid">
+                            {CATEGORIES.map(cat => {
+                                const wish = (habitsData.wish && habitsData.wish[cat]) || [];
+                                return (
+                                    <div key={cat} className="waiting-zone">
                                         {wish.length > 0 ? (
                                             wish.map(w => (
                                                 <div 
@@ -275,19 +298,16 @@
                                                     title="터치하여 습관 탑으로 올리기"
                                                 >
                                                     <span>{w.title}</span>
-                                                    <LevelGauge 
-                                                        level={w.level} 
-                                                        onClick={(e) => handleCycleLevel(w, e)} 
-                                                    />
+                                                    <LevelGauge level="하" />
                                                 </div>
                                             ))
                                         ) : (
                                             <div style={{ fontSize: '0.55rem', color: '#a0aec0', margin: 'auto 0' }}>대기 없음</div>
                                         )}
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
 
                     <details className="card" style={{ marginTop: '14px' }}>
