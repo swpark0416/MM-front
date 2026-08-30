@@ -65,7 +65,7 @@
             width: 94%; border-radius: 6px; padding: 6px 4px; font-size: 0.65rem; text-align: center; 
             word-break: break-all; background: #ffffff; font-weight: 600;
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-            cursor: pointer; user-select: none; transition: background-color 0.1s, opacity 0.1s, transform 0.05s;
+            cursor: pointer; user-select: none; transition: transform 0.05s ease;
             touch-action: manipulation;
         }
         .habit-block:active { transform: scale(0.95); }
@@ -124,7 +124,6 @@
             );
         }
 
-        // 습관 탑 블록 컴포넌트
         function HabitBlockItem({ item, cls, onDemoteToWish, onLongPress }) {
             const timerRef = React.useRef(null);
             const isLongPressRef = React.useRef(false);
@@ -150,7 +149,6 @@
                     isLongPressRef.current = false;
                     return;
                 }
-                // 짧은 터치 시 대기 중 영역으로 이동
                 onDemoteToWish(item);
             };
 
@@ -200,54 +198,90 @@
                 return () => clearInterval(interval);
             }, []);
 
-            // 습관 탑 블록 터치 -> 대기 중으로 이동
+            // 습관 탑 블록 터치 -> 대기 중으로 즉시 이동 (낙관적 UI 적용)
             const handleDemoteToWish = async (item) => {
+                // 1. 화면 상태를 먼저 즉시 변경 (0ms 반응)
+                setHabitsData(prev => {
+                    const categoryOwned = (prev.owned[item.category] || []).filter(h => h.id !== item.id);
+                    const updatedItem = { ...item, status: "만들고 싶은 습관" };
+                    const categoryWish = [...(prev.wish[item.category] || []), updatedItem];
+                    return {
+                        ...prev,
+                        owned: { ...prev.owned, [item.category]: categoryOwned },
+                        wish: { ...prev.wish, [item.category]: categoryWish }
+                    };
+                });
+
+                // 2. 백그라운드 서버 요청
                 try {
                     await fetch(`${API_BASE_URL}/api/habits/${item.id}`, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ status: "만들고 싶은 습관" })
                     });
-                    loadHabits();
                 } catch (err) {
                     console.error("대기 이동 실패:", err);
+                    loadHabits(); // 에러 발생 시 원복 re-fetch
                 }
             };
 
-            // 대기 중 습관 터치 -> 습관 탑으로 즉시 승격 (확인 팝업 없음)
+            // 대기 중 습관 터치 -> 습관 탑으로 즉시 이동 (낙관적 UI 적용)
             const handlePromoteToOwned = async (item) => {
+                // 1. 화면 상태를 먼저 즉시 변경 (0ms 반응)
+                setHabitsData(prev => {
+                    const categoryWish = (prev.wish[item.category] || []).filter(h => h.id !== item.id);
+                    const updatedItem = { ...item, status: "보유 습관" };
+                    const categoryOwned = [...(prev.owned[item.category] || []), updatedItem];
+                    return {
+                        ...prev,
+                        owned: { ...prev.owned, [item.category]: categoryOwned },
+                        wish: { ...prev.wish, [item.category]: categoryWish }
+                    };
+                });
+
+                // 2. 백그라운드 서버 요청
                 try {
                     await fetch(`${API_BASE_URL}/api/habits/${item.id}`, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ status: "보유 습관" })
                     });
-                    loadHabits();
                 } catch (err) {
                     console.error("습관 승격 실패:", err);
+                    loadHabits(); // 에러 발생 시 원복 re-fetch
                 }
             };
 
             // 모달에서 수준 변경
             const handleChangeLevel = async (item, newLevel) => {
+                setHabitsData(prev => {
+                    const categoryOwned = (prev.owned[item.category] || []).map(h => 
+                        h.id === item.id ? { ...h, level: newLevel } : h
+                    );
+                    return {
+                        ...prev,
+                        owned: { ...prev.owned, [item.category]: categoryOwned }
+                    };
+                });
+                setEditModalItem(null);
+
                 try {
                     await fetch(`${API_BASE_URL}/api/habits/${item.id}`, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ level: newLevel })
                     });
-                    setEditModalItem(null);
-                    loadHabits();
                 } catch (err) {
                     console.error("수준 변경 실패:", err);
+                    loadHabits();
                 }
             };
 
             // 모달에서 삭제
             const handleDeleteFromModal = async (id) => {
+                setEditModalItem(null);
                 try {
                     await fetch(`${API_BASE_URL}/api/habits/${id}`, { method: "DELETE" });
-                    setEditModalItem(null);
                     loadHabits();
                 } catch (err) {
                     console.error("삭제 실패:", err);
