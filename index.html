@@ -9,16 +9,52 @@
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f7fafc; color: #2d3748; padding: 16px; max-width: 600px; margin: 0 auto; overflow-x: hidden; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: #f7fafc; 
+            color: #2d3748; 
+            padding: 16px 16px 80px 16px; /* 하단 네비게이션 공간 확보 */
+            max-width: 600px; 
+            margin: 0 auto; 
+            overflow-x: hidden; 
+        }
 
-        /* 슬라이드 컨테이너 */
-        .slider-container { display: flex; width: 200%; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
-        .slide-page { width: 50%; padding: 4px; flex-shrink: 0; }
+        /* 3개 슬라이드 컨테이너 */
+        .slider-container { display: flex; width: 300%; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+        .slide-page { width: 33.333%; padding: 4px; flex-shrink: 0; }
 
-        /* 페이지 인디케이터 */
-        .dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 16px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background-color: #cbd5e0; cursor: pointer; transition: background 0.3s; }
-        .dot.active { background-color: #3182ce; width: 20px; border-radius: 4px; }
+        /* 하단 고정 네비게이션 바 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 600px;
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            color: #a0aec0;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+            border: none;
+            background: none;
+        }
+        .nav-item.active {
+            color: #3182ce;
+            font-weight: 700;
+        }
+        .nav-icon { font-size: 1.2rem; margin-bottom: 2px; }
 
         /* Silence(명상) 카드 스타일 */
         .silence-card {
@@ -32,12 +68,10 @@
             align-items: center;
             justify-content: center;
             min-height: 480px;
-            position: relative;
         }
         .silence-title { font-size: 1.4rem; font-weight: 700; color: #4a5568; margin-bottom: 8px; }
         .silence-subtitle { font-size: 0.85rem; color: #718096; margin-bottom: 28px; }
 
-        /* 숨쉬기 애니메이션 써클 */
         .breathe-circle {
             width: 140px;
             height: 140px;
@@ -57,9 +91,50 @@
             50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4); }
         }
 
-        .swipe-hint { margin-top: auto; font-size: 0.75rem; color: #a0aec0; display: flex; align-items: center; gap: 4px; }
+        /* Affirmation (사명서) 카드 스타일 */
+        .affirmation-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid #e2e8f0;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+        }
+        .mission-textarea {
+            width: 100%;
+            flex: 1;
+            min-height: 280px;
+            margin-top: 12px;
+            padding: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: #2d3748;
+            resize: none;
+            outline: none;
+            background-color: #f8fafc;
+            font-family: inherit;
+        }
+        .mission-textarea:focus {
+            border-color: #3182ce;
+            background-color: #ffffff;
+        }
+        .mission-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+        }
+        .save-toast {
+            font-size: 0.75rem;
+            color: #38a169;
+            font-weight: 600;
+        }
 
-        /* 기존 습관 탑 스타일 */
+        /* 습관 탑 스타일 */
         h1 { text-align: center; font-size: 1.3rem; margin-bottom: 14px; font-weight: 700; color: #2d3748; }
         .card { background: #ffffff; border: 1px solid #e9ecef; border-radius: 10px; padding: 12px; margin-bottom: 14px; font-size: 0.8rem; }
         .form-group { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
@@ -107,6 +182,17 @@
         const NEXT_LEVEL = { "하": "중", "중": "상", "상": "하" };
         const LEVEL_ORDER = { "하": 1, "중": 2, "상": 3 };
 
+        const DEFAULT_MISSION = `[나의 개인 사명서 - 성공하는 사람들의 7가지 습관]
+
+1. 나는 어떤 사람이 되고 싶은가? (성품과 인격)
+- 
+
+2. 나는 무엇을 하고 싶은가? (업적과 기여)
+- 
+
+3. 내가 삶에서 지키고자 하는 핵심 원칙은 무엇인가?
+- `;
+
         function LevelGauge({ level }) {
             const filledCount = level === "상" ? 3 : level === "중" ? 2 : 1;
             return (
@@ -122,6 +208,12 @@
             const [currentPage, setCurrentPage] = React.useState(0);
             const [touchStart, setTouchStart] = React.useState(0);
             const [touchEnd, setTouchEnd] = React.useState(0);
+
+            // 사명서 상태 및 저장 안내 문구
+            const [mission, setMission] = React.useState(() => {
+                return localStorage.getItem("my_mission_statement") || DEFAULT_MISSION;
+            });
+            const [saveMsg, setSaveMsg] = React.useState("");
 
             const [habitsData, setHabitsData] = React.useState({ owned: {}, wish: {}, all: [] });
             const [title, setTitle] = React.useState("");
@@ -149,14 +241,21 @@
                 return () => clearInterval(interval);
             }, []);
 
-            // 터치 스와이프 제스처 처리
+            // 사명서 저장 로직
+            const handleSaveMission = () => {
+                localStorage.setItem("my_mission_statement", mission);
+                setSaveMsg("✓ 저장되었습니다.");
+                setTimeout(() => setSaveMsg(""), 2000);
+            };
+
+            // 터치 스와이프 제스처 처리 (총 3페이지: 0, 1, 2)
             const handleTouchStart = (e) => setTouchStart(e.targetTouches[0].clientX);
             const handleTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
             const handleTouchEnd = () => {
                 if (!touchStart || !touchEnd) return;
                 const distance = touchStart - touchEnd;
-                if (distance > 50 && currentPage === 0) setCurrentPage(1); // 오른쪽에서 왼쪽 스와이프 -> 다음 페이지
-                if (distance < -50 && currentPage === 1) setCurrentPage(0); // 왼쪽에서 오른쪽 스와이프 -> 이전 페이지
+                if (distance > 50 && currentPage < 2) setCurrentPage(currentPage + 1);
+                if (distance < -50 && currentPage > 0) setCurrentPage(currentPage - 1);
                 setTouchStart(0);
                 setTouchEnd(0);
             };
@@ -217,31 +316,41 @@
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                 >
-                    {/* 상단 상단 페이지 네비게이션 점 표시 */}
-                    <div className="dots">
-                        <div className={`dot ${currentPage === 0 ? 'active' : ''}`} onClick={() => setCurrentPage(0)} />
-                        <div className={`dot ${currentPage === 1 ? 'active' : ''}`} onClick={() => setCurrentPage(1)} />
-                    </div>
-
-                    <div className="slider-container" style={{ transform: `translateX(-${currentPage * 50}%)` }}>
+                    {/* 슬라이드 영역 */}
+                    <div className="slider-container" style={{ transform: `translateX(-${currentPage * (100 / 3)}%)` }}>
                         
                         {/* Slide 1: Silence (명상) */}
                         <div className="slide-page">
                             <div className="silence-card">
                                 <div className="silence-title">🧘‍♂️ 1. Silence (침묵)</div>
                                 <div className="silence-subtitle">고요히 숨을 쉬며 마음을 정리해 보세요</div>
-                                
-                                <div className="breathe-circle">
-                                    ✨
-                                </div>
+                                <div className="breathe-circle">✨</div>
+                            </div>
+                        </div>
 
-                                <div className="swipe-hint">
-                                    <span>왼쪽으로 스와이프하여 습관 탑으로 이동</span> ➔
+                        {/* Slide 2: Affirmation (사명서) */}
+                        <div className="slide-page">
+                            <div className="affirmation-card">
+                                <h1 style={{ textAlign: 'left', marginBottom: '4px' }}>📜 2. Affirmation (사명서)</h1>
+                                <div style={{ fontSize: '0.75rem', color: '#718096' }}>
+                                    성공하는 사람들의 7가지 습관 : 나의 개인 사명서
+                                </div>
+                                <textarea
+                                    className="mission-textarea"
+                                    value={mission}
+                                    onChange={(e) => setMission(e.target.value)}
+                                    placeholder="여기에 나만의 사명서를 작성해보세요..."
+                                />
+                                <div className="mission-actions">
+                                    <span className="save-toast">{saveMsg}</span>
+                                    <button onClick={handleSaveMission} style={{ padding: '8px 16px', borderRadius: '8px' }}>
+                                        사명서 저장하기
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Slide 2: 습관 탑 (습관 트래킹) */}
+                        {/* Slide 3: 습관 탑 (습관 트래킹) */}
                         <div className="slide-page">
                             <h1>🏛️ 나의 습관 탑</h1>
 
@@ -346,6 +455,22 @@
                             </details>
                         </div>
                     </div>
+
+                    {/* 하단 네비게이션 바 */}
+                    <div className="bottom-nav">
+                        <button className={`nav-item ${currentPage === 0 ? 'active' : ''}`} onClick={() => setCurrentPage(0)}>
+                            <span className="nav-icon">🧘</span>
+                            <span>Silence</span>
+                        </button>
+                        <button className={`nav-item ${currentPage === 1 ? 'active' : ''}`} onClick={() => setCurrentPage(1)}>
+                            <span className="nav-icon">📜</span>
+                            <span>사명서</span>
+                        </button>
+                        <button className={`nav-item ${currentPage === 2 ? 'active' : ''}`} onClick={() => setCurrentPage(2)}>
+                            <span className="nav-icon">🏛️</span>
+                            <span>습관 탑</span>
+                        </button>
+                    </div>
                 </div>
             );
         }
@@ -354,3 +479,4 @@
     </script>
 </body>
 </html>
+
