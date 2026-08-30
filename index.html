@@ -61,14 +61,35 @@
         .tower-header { text-align: center; font-size: 0.72rem; font-weight: 700; padding-bottom: 6px; border-bottom: 2px solid rgba(0,0,0,0.05); }
         .tower-blocks { display: flex; flex-direction: column-reverse; width: 100%; align-items: center; margin-top: auto; gap: 4px; }
 
+        /* 블록 높이 고정 및 줄바꿈 처리 */
         .habit-block { 
-            width: 94%; border-radius: 6px; padding: 6px 4px; font-size: 0.65rem; text-align: center; 
-            word-break: break-all; background: #ffffff; font-weight: 600;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-            cursor: pointer; user-select: none; transition: transform 0.05s ease;
+            width: 94%; 
+            height: 42px; /* 블록 전체 높이 일괄 통일 */
+            border-radius: 6px; 
+            padding: 4px; 
+            text-align: center; 
+            word-break: break-all; 
+            background: #ffffff; 
+            font-weight: 600;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 2px;
+            cursor: pointer; 
+            user-select: none; 
+            transition: transform 0.05s ease;
             touch-action: manipulation;
         }
         .habit-block:active { transform: scale(0.95); }
+
+        .habit-title-text {
+            line-height: 1.15;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* 최대 2줄 제한 */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
         .block-study { color: #e53e3e; border: 1px solid #feb2b2; }
         .block-hobby { color: #dd6b20; border: 1px solid #fbd38d; }
@@ -81,7 +102,25 @@
 
         .waiting-zone { height: 150px; flex-shrink: 0; background-color: #f8f9fa; border: 1.5px dashed #cbd5e0; border-radius: 8px; padding: 6px 2px; text-align: center; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
         .waiting-title { font-size: 0.58rem; color: #718096; font-weight: 700; margin-bottom: 4px; flex-shrink: 0; }
-        .waiting-chip { background-color: #ffffff; border-radius: 4px; padding: 6px 4px; margin: 2px auto; width: 90%; font-size: 0.6rem; color: #4a5568; border: 1px solid #e2e8f0; text-align: center; cursor: pointer; user-select: none; touch-action: manipulation; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        
+        .waiting-chip { 
+            background-color: #ffffff; 
+            border-radius: 4px; 
+            padding: 4px; 
+            margin: 2px auto; 
+            width: 90%; 
+            min-height: 32px;
+            color: #4a5568; 
+            border: 1px solid #e2e8f0; 
+            text-align: center; 
+            cursor: pointer; 
+            user-select: none; 
+            touch-action: manipulation; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            word-break: break-all;
+        }
         .waiting-chip:active { transform: scale(0.95); }
 
         /* 모달 스타일 */
@@ -112,6 +151,15 @@
 
 3. 내가 삶에서 지키고자 하는 핵심 원칙은 무엇인가?
 - `;
+
+        // 텍스트 길이에 따라 자동으로 적절한 font-size 반환
+        function getDynamicFontSize(text) {
+            if (!text) return '0.65rem';
+            const len = text.length;
+            if (len > 12) return '0.48rem';
+            if (len > 8)  return '0.55rem';
+            return '0.65rem';
+        }
 
         function LevelGauge({ level }) {
             const filledCount = level === "상" ? 3 : level === "중" ? 2 : 1;
@@ -161,7 +209,12 @@
                     onPointerCancel={handlePointerUp}
                     onClick={handleClick}
                 >
-                    <span>{item.title}</span>
+                    <span 
+                        className="habit-title-text" 
+                        style={{ fontSize: getDynamicFontSize(item.title) }}
+                    >
+                        {item.title}
+                    </span>
                     <LevelGauge level={item.level} />
                 </div>
             );
@@ -198,9 +251,7 @@
                 return () => clearInterval(interval);
             }, []);
 
-            // 습관 탑 블록 터치 -> 대기 중으로 즉시 이동 (낙관적 UI 적용)
             const handleDemoteToWish = async (item) => {
-                // 1. 화면 상태를 먼저 즉시 변경 (0ms 반응)
                 setHabitsData(prev => {
                     const categoryOwned = (prev.owned[item.category] || []).filter(h => h.id !== item.id);
                     const updatedItem = { ...item, status: "만들고 싶은 습관" };
@@ -212,7 +263,6 @@
                     };
                 });
 
-                // 2. 백그라운드 서버 요청
                 try {
                     await fetch(`${API_BASE_URL}/api/habits/${item.id}`, {
                         method: "PATCH",
@@ -221,13 +271,11 @@
                     });
                 } catch (err) {
                     console.error("대기 이동 실패:", err);
-                    loadHabits(); // 에러 발생 시 원복 re-fetch
+                    loadHabits();
                 }
             };
 
-            // 대기 중 습관 터치 -> 습관 탑으로 즉시 이동 (낙관적 UI 적용)
             const handlePromoteToOwned = async (item) => {
-                // 1. 화면 상태를 먼저 즉시 변경 (0ms 반응)
                 setHabitsData(prev => {
                     const categoryWish = (prev.wish[item.category] || []).filter(h => h.id !== item.id);
                     const updatedItem = { ...item, status: "보유 습관" };
@@ -239,7 +287,6 @@
                     };
                 });
 
-                // 2. 백그라운드 서버 요청
                 try {
                     await fetch(`${API_BASE_URL}/api/habits/${item.id}`, {
                         method: "PATCH",
@@ -248,11 +295,10 @@
                     });
                 } catch (err) {
                     console.error("습관 승격 실패:", err);
-                    loadHabits(); // 에러 발생 시 원복 re-fetch
+                    loadHabits();
                 }
             };
 
-            // 모달에서 수준 변경
             const handleChangeLevel = async (item, newLevel) => {
                 setHabitsData(prev => {
                     const categoryOwned = (prev.owned[item.category] || []).map(h => 
@@ -277,7 +323,6 @@
                 }
             };
 
-            // 모달에서 삭제
             const handleDeleteFromModal = async (id) => {
                 setEditModalItem(null);
                 try {
@@ -392,8 +437,7 @@
                                                 {wish.length > 0 ? (
                                                     wish.map(w => (
                                                         <div key={w.id} className="waiting-chip" onClick={() => handlePromoteToOwned(w)}>
-                                                            <span>{w.title}</span>
-                                                            <LevelGauge level={w.level} />
+                                                            <span style={{ fontSize: getDynamicFontSize(w.title) }}>{w.title}</span>
                                                         </div>
                                                     ))
                                                 ) : (
